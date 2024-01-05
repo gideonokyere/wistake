@@ -1,2 +1,2 @@
 # wistake
-Stake your ether to interest
+Stake your ether to earn interest
