@@ -2,20 +2,19 @@
 pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract Wistake is Initializable, AccessControlUpgradeable, OwnableUpgradeable {
+contract Wistake is Initializable, OwnableUpgradeable {
 
-  error DepositFail(bytes errorMessage);
+  error DepositFail(string errorMessage);
+  error WithdrawalFailed(string errorMessage);
   event FundsDeposited(address indexed _from,address indexed _to,uint256 _amount);
   event TokenStake(uint stakeId, address indexed addr, uint _amount);
 
   IERC20 witoken;
-  address private _owner;
-  address private constant approvedAddress = 0x1533515803e27B20A2A7aACbE5eb7eAEA63eC54D;
-  uint private balances; // This variable is use to track the total balance recieved by the contract
+  address private approvedAddress; // the address to spend tokens on behave
+  uint private balance; // This variable is use to track the total balance recieved by the contract
   uint interestRate = 12;
 
   struct Stake {
@@ -27,10 +26,10 @@ contract Wistake is Initializable, AccessControlUpgradeable, OwnableUpgradeable 
 
   mapping(address=>Stake[]) public stakes;
 
-  function initialize(IERC20 _token) public initializer {
+  function initialize(IERC20 _token, address _approvedAddress ) public initializer {
     witoken = _token;
-    _owner = msg.sender;
-    _grantRole(DEFAULT_ADMIN_ROLE,msg.sender);
+    approvedAddress = _approvedAddress;
+    __Ownable_init(msg.sender);
   }
 
   receive() external payable {
@@ -81,8 +80,25 @@ contract Wistake is Initializable, AccessControlUpgradeable, OwnableUpgradeable 
    * @param _amount the amount of funds(token) recieving
    */
   function _depositFunds(address _from, address _to, uint _amount) internal returns (bool) {
-    balances+=_amount;
+    balance+=_amount;
     witoken.transferFrom(_from,_to,_amount);
     return true;
   }
+
+  /**
+   * This function is used to withdraw funds from the contract
+   * @notice only the owner of the contract can call this function
+   * @param _to address to send funds to
+   * @param _amount amount to send
+   */
+  function widthdrawFunds(address _to, uint256 _amount) external onlyOwner returns (bool){
+  if(_amount > balance){
+    revert WithdrawalFailed("low balance");
+  }
+  balance -= _amount;
+  (bool sent,) = _to.call{value: _amount}("");
+  require(sent);
+  return true;
+ }
+
 }
