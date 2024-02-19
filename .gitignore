@@ -132,3 +132,5 @@ dist
 # hardhat
 cache/
 artifacts/
+.openzeppelin/
+docs/*
