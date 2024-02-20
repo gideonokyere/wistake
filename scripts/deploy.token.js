@@ -9,4 +9,7 @@ async function deployToken(){
     console.log("Token deployed at: ",tokenAddress);
 };
 
-deployToken();
+deployToken().catch((error)=>{
+    console.log(error);
+    process.exitCode = 1;
+})

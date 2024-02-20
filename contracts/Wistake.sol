@@ -6,7 +6,6 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./Witoken.sol";
-import "hardhat/console.sol";
 
 contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
@@ -55,7 +54,6 @@ contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeabl
   }
 
   /**
-   * @notice low token balance is already check in the token contract
    * this function allows the owner of the contract to send token to a specific address
    * @param _to the address to send token to
    * @param _amount the amount of token to send

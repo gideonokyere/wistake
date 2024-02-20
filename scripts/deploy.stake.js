@@ -1,7 +1,7 @@
 const {ethers,upgrades} = require("hardhat");
 
 async function deployProxy(){
-    const tokenAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+    const tokenAddress = "0x9d9454Fc6A1B911979B03507b4AcA17D0f75680A";
     const Wistake = await ethers.getContractFactory('Wistake');
     const wistake = await upgrades.deployProxy(Wistake,[tokenAddress]);
     await wistake.waitForDeployment();
