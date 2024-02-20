@@ -36,4 +36,4 @@ Users have 100% control on their token. They decide when to stake and when to ca
 You can also interact with wistake contract since we have approved it to spend some token.
 You can send ether to wistake and in return, you will get Witoken(WIT).
 
-For more info on wistake functions, follow this link [Wistake Docs]()
+For more info on wistake functions, follow this link [Wistake Docs](https://github.com/gideonokyere/wistake/blob/main/docs/Wistake.md)
