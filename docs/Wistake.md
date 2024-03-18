@@ -30,7 +30,7 @@ function _owner() external view returns (address payable)
 ### changeInterest
 
 ```solidity
-function changeInterest(uint256 _newRate) external nonpayable
+function changeInterest(uint64 _newRate) external nonpayable
 ```
 
 This function allows only the owner to change the interest rate;
@@ -41,7 +41,7 @@ This function allows only the owner to change the interest rate;
 
 | Name | Type | Description |
 |---|---|---|
-| _newRate | uint256 | - new interest rate value |
+| _newRate | uint64 | - new interest rate value |
 
 ### endStake
 
@@ -49,7 +49,7 @@ This function allows only the owner to change the interest rate;
 function endStake(uint256 stakeId) external nonpayable returns (bool)
 ```
 
-this function allows users to end a stake and get their token + interest interest is calculated base on the number of days the stake has been running
+this function allows users to end a stake and get their token + interestinterest is calculated base on the number of days the stake has been running
 
 
 
@@ -234,7 +234,7 @@ function transferOwnership(address newOwner) external nonpayable
 ### widthdrawFunds
 
 ```solidity
-function widthdrawFunds(address payable _to, uint256 _amount) external payable returns (bool)
+function widthdrawFunds(address payable _to, uint256 _amount) external payable
 ```
 
 This function is used to withdraw funds from the contractonly the owner of the contract can call this function
@@ -247,12 +247,6 @@ This function is used to withdraw funds from the contractonly the owner of the c
 |---|---|---|
 | _to | address payable | address to send funds to |
 | _amount | uint256 | amount to send |
-
-#### Returns
-
-| Name | Type | Description |
-|---|---|---|
-| _0 | bool | undefined |
 
 
 
