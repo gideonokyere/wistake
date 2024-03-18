@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
-import "hardhat/console.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
@@ -54,7 +53,7 @@ contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeabl
   }
 
   /**
-   * this function allows the owner of the contract to send token to a specific address
+   * @notice this function allows the owner of the contract to send token to a specific address
    * @param _to the address to send token to
    * @param _amount the amount of token to send
    */
@@ -70,7 +69,7 @@ contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeabl
   }
 
   /**
-   * This function let the user to stake their tokens.
+   * @notice This function let the user to stake their tokens.
    * Users can stake as many as they want so far us they have enough tokens
    * @param _amount the amount the user is staking
    */
@@ -93,7 +92,7 @@ contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeabl
 
 
   /**
-   * this is a resuable function which allows users to deposit funds in exchange for token
+   *@notice this is a resuable function which allows users to deposit funds in exchange for token
    * @param _to the address to deposit the funds(token) to
    * @param _amount the amount of funds(token) recieving
    * @return bool
@@ -104,24 +103,21 @@ contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeabl
   }
 
   /**
-   * This function is used to withdraw funds from the contract
+   * @notice This function is used to withdraw funds from the contract
    * @notice only the owner of the contract can call this function
    * @param _to address to send funds to
    * @param _amount amount to send
    */
-  function widthdrawFunds(address payable _to, uint256 _amount) external payable onlyOwner returns (bool){
-  if(_amount > balance){
-    revert WithdrawalFailed("low balance");
-  }
+  function widthdrawFunds(address payable _to, uint256 _amount) external payable onlyOwner{
+  require(_amount <= balance,"Low balance");
   balance -= _amount; // subtracting from the contract balance
   (bool sent,) = _to.call{value: _amount}("");
-  require(sent);
+  require(sent,"Transaction not sent");
   emit FundsTransfer(_to,_amount);
-  return true;
  }
 
 /**
- * Return stakes an address owns.
+ * @notice Return stakes an address owns.
  */
  function getStakes() external view returns (Stake[] memory) {
   return stakes[msg.sender];
@@ -130,57 +126,38 @@ contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeabl
 
 
 /**
- * this function allows users to end a stake and get their token + interest
- * interest is calculated base on the number of days the stake has been running
+ * @notice this function allows users to end a stake and get their token + interest
+ * @notice interest is calculated base on the number of days the stake has been running
  * @param stakeId a particular stake the user wants to end
  */
 function endStake(uint stakeId) external nonReentrant returns (bool){
   Stake storage stake = stakes[msg.sender][stakeId];
   require(stake.isActive != false,"Stake already ended");
-  require(block.timestamp >= (stake.dateTime + 1 seconds),"You can end your stake after 1 second");
-  uint interestToPay = _calculateStakeInterest(stake.interestRate,stake.dateTime,stake.amount);
+  require(block.timestamp >= (stake.dateTime + 1 seconds),"You can end your stake after 1 second"); //
+  uint256 interestToPay = _calculateStakeInterest(stake.interestRate,stake.dateTime,stake.amount);
   stake.isActive = false;
   _depositFunds(msg.sender,stake.amount+interestToPay);
   emit EndStake(stake.stakeId,stake.amount,msg.sender);
   return true;
 }
 
-// // Get stake by it Id.
-// function _getUserStake(uint _stakeId) internal view returns (Stake storage){
-//   address _user = msg.sender;
-//   Stake storage _stake;
-//   uint stakeLength = stakes[_user].length;
-//   for(uint i=0; i<stakeLength;i++){
-//     if(stakes[_user][i].stakeId == _stakeId){
-//       _stake = stakes[_user][i];
-//     }else {
-//       revert NoStakeFound("Stake not found");
-//     }
-//   }
-//   return _stake;
-// }
-
 /**
- * this function calculate the interest a user will get base on the number of days stake runs
+ * @dev this function calculate the interest a user will get base on the number of days stake runs
  * @param _interestRate - the interest rate of the stake
  * @param _dateTime - the number of days it has run
  * @param _amount - the amount the user invested
  */
-function _calculateStakeInterest(uint _interestRate,uint _dateTime,uint _amount) internal view returns (uint) {
-  uint _period = block.timestamp - _dateTime / 1 seconds; // This will be set to days or months in a production.
-  uint interestToPay;
-  for(uint i=0;i<_period;i++){
-    uint yield = _amount * _interestRate / 100;
-    interestToPay+=yield;
-  }
-  return interestToPay;
+function _calculateStakeInterest(uint256 _interestRate,uint256 _dateTime,uint256 _amount) internal view returns (uint256) {
+  uint256 _period = block.timestamp - _dateTime / 1 seconds; // This will be set to days or months in a production.
+  uint256 yield = (_amount * _interestRate) / 100;
+  return yield * _period;
 }
 
 /**
- * This function allows only the owner to change the interest rate;
+ * @notice This function allows only the owner to change the interest rate;
  * @param _newRate - new interest rate value
  */
-function changeInterest(uint _newRate) external onlyOwner{
+function changeInterest(uint64 _newRate) external onlyOwner{
   interestRate = _newRate;
   emit InterestRateChange(_newRate);
 }
