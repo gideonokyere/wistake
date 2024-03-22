@@ -12,6 +12,8 @@ contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeabl
   error WithdrawalFailed(string errorMessage);
   error NoStakeFound(string errorMessage);
 
+  error TransactionFailed(string errorMessage);
+
   event FundsDeposited(address indexed _from,address indexed _to,uint256 _amount);
   event TokenStake(uint _stakeId, address indexed _addr, uint _amount);
   event FundsTransfer(address indexed _to, uint256 _amount);
@@ -21,7 +23,6 @@ contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeabl
 
   Witoken witoken;
   address payable public  _owner;
-  uint private balance; // This variable is use to track the total ether recieved by the contract
   uint interestRate; // this is 
 
   struct Stake {
@@ -109,6 +110,7 @@ contract Wistake is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeabl
    * @param _amount amount to send
    */
   function widthdrawFunds(address payable _to, uint256 _amount) external payable onlyOwner{
+  uint256 balance = address(this).balance;
   require(_amount <= balance,"Low balance");
   balance -= _amount; // subtracting from the contract balance
   (bool sent,) = _to.call{value: _amount}("");
@@ -167,6 +169,16 @@ function changeInterest(uint64 _newRate) external onlyOwner{
  */
 function getTokenBalance() external view returns (uint256) {
   return witoken.balanceOf(msg.sender);
+}
+
+function widthdrawal(uint256 _amount) external nonReentrant returns (bool) {
+  address caller = msg.sender;
+  uint256 userBalance = witoken.balanceOf(caller);
+  if(_amount > userBalance) revert WithdrawalFailed("Low Balance");
+  witoken.burnToken(caller,_amount);
+  (bool sent,) = caller.call{value:_amount}("");
+  if(!sent) revert TransactionFailed("Transaction Failed");
+  return true;
 }
 
 
