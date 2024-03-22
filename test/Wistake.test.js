@@ -101,13 +101,6 @@ describe("Wistake",function(){
       expect(endStake[0].isActive).to.be.false;
     });
 
-    // it("User should not able to end inactive stake",async function(){
-    //   const {wistake} = deployObject;
-    //   const stakes = await wistake.getStakes();
-    //   const stakeId = stakes[0].stakeId;
-    //   //expect(await wistake.endStake(stakeId)).to.be.revertedWith("stake already ended");
-    // });
-
   })
 
 })
